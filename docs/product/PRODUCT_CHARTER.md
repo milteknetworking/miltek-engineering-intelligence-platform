@@ -14,6 +14,8 @@
 
 # 1. Product Purpose
 
+MEIP does not replace the engineering systems organizations already use. It connects their quality evidence, evaluates it against organizational release policies, and transforms it into explainable intelligence that helps stakeholders make informed decisions about advancing software through UAT and production.
+
 Miltek Engineering Intelligence Platform (MEIP) exists to help organizations answer one of the most important questions in software delivery:
 
 > **Are we truly ready to release this software to our customers?**
