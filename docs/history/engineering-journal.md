@@ -38,3 +38,5 @@ Engineering Journal — Entry 006
 Date: August 11, 2026
 
 Bring the systems together. Gather the evidence. Give stakeholders the complete picture. Help them make the decision.
+
+Vendor neutrality is a foundational MEIP requirement. Customer technology choices must not determine whether they can benefit from Miltek's core intelligence platform.
