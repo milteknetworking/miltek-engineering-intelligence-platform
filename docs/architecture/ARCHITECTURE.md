@@ -316,7 +316,7 @@ Miltek Labs is not building another isolated QA tool.
 
 **Model:** MEIP Engineering Model
 **Version:** 0.0.1
-**Status:** Draft
+**Status:** Approved
 **Architecture:** MEIP 0.0.1
 
 ---
