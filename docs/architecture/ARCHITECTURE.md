@@ -1429,7 +1429,7 @@ MEIP is being designed as the intelligence and orchestration layer connecting th
 **Platform:** Miltek Engineering Intelligence Platform (MEIP)  
 **Organization:** Miltek Labs  
 **Version:** 0.0.1  
-**Status:** Draft  
+**Status:** Approved  
 **Architecture Review:** #3 — Core Modules & Boundaries
 
 ## 3.1 Purpose
@@ -1878,3 +1878,129 @@ The following topics require further architectural review before implementation 
 - Cross-project reporting authorization.
 - Release assessment snapshot integrity.
 - Initial deployment, monitoring, and operational security.
+
+
+# Section 4 — Data Model & Tenant Isolation
+
+**Platform:** Miltek Engineering Intelligence Platform (MEIP)  
+**Organization:** Miltek Labs  
+**Version:** 0.0.1  
+**Status:** Draft  
+**Architecture Review:** #4 — Data Model & Tenant Isolation
+
+## 4.1 Purpose
+
+This section defines the foundational data architecture for the Miltek Engineering Intelligence Platform (MEIP).
+
+The design must support:
+
+- Multiple customer organizations and projects.
+- Users belonging to multiple organizations.
+- Flexible engineering team assignments.
+- Organization- and project-scoped authorization.
+- Vendor-neutral engineering artifact identification.
+- Immutable artifact revisions.
+- Version-aware engineering traceability.
+- Secure evidence and audit records.
+- Modular adoption of engineering capabilities.
+
+The objective is to establish a reliable, secure foundation without prematurely implementing every feature of the platform.
+
+## 4.2 Database Architecture
+
+MEIP will initially use PostgreSQL within a shared-database, multi-tenant architecture.
+
+Customer organizations will share the database infrastructure while maintaining logically isolated data.
+
+Tenant isolation will be enforced through multiple layers:
+
+1. Server-side authentication and authorization.
+2. Verified organization context.
+3. PostgreSQL Row-Level Security (RLS).
+4. Tenant-consistent database relationships.
+5. Restricted database privileges.
+6. Automated tenant-isolation testing.
+
+The initial implementation will use a modular monolith. Database schemas or table namespaces may be organized by domain, but individual product modules must retain explicit data ownership.
+
+Dedicated enterprise databases or deployments may be evaluated in future versions.
+
+## 4.3 Foundational Entity Model
+
+The initial entity model consists of five groups.
+
+### Identity and Organization
+
+- User
+- Organization
+- OrganizationMembership
+- Team
+- TeamMembership
+- Project
+- ProjectMembership
+- TeamProjectAssignment
+
+### Authorization
+
+- Role
+- Permission
+- RolePermission
+- RoleAssignment
+
+### Engineering Registry
+
+- EngineeringArtifact
+- ArtifactRevision
+- ArtifactExternalMapping
+- ArtifactRelationship
+- ArtifactRelationshipType
+
+### Evidence and Governance
+
+- EvidenceRecord
+- EvidenceLocation
+- ReviewRequest
+- ReviewDecision
+- ApprovalPolicy
+- AuditEvent
+
+### Integration
+
+- IntegrationConnection
+- ExternalSystemReference
+- IntegrationSyncEvent
+
+These are proposed foundational entities. Detailed product-domain tables will be introduced as their modules are implemented.
+
+## 4.4 Organization and Membership Model
+
+### Users
+
+Represents a platform identity.
+
+Suggested fields:
+
+- id
+- identity_provider_subject
+- display_name
+- email
+- account_status
+- created_at
+- updated_at
+
+A user is not permanently tied to one organization.
+
+### Organizations
+
+Represents a customer tenant.
+
+Suggested fields:
+
+- id
+- name
+- slug
+- status
+- created_at
+- updated_at
+
+### OrganizationMembership
