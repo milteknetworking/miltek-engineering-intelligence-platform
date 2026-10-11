@@ -1423,3 +1423,458 @@ That connected history forms the foundation of MEIP Engineering Intelligence.
 
 
 MEIP is being designed as the intelligence and orchestration layer connecting the engineering quality lifecycle from business intent through software release.
+
+# Section 3 — Core Modules & Boundaries
+
+**Platform:** Miltek Engineering Intelligence Platform (MEIP)  
+**Organization:** Miltek Labs  
+**Version:** 0.0.1  
+**Status:** Draft  
+**Architecture Review:** #3 — Core Modules & Boundaries
+
+## 3.1 Purpose
+
+This section defines the foundational architecture, shared platform capabilities, product modules, ownership boundaries, and governance requirements of the Miltek Engineering Intelligence Platform (MEIP).
+
+MEIP is designed as a vendor-neutral, modular engineering intelligence and orchestration platform supporting the software engineering lifecycle.
+
+The architecture must enable organizations to adopt individual product capabilities while benefiting from shared engineering context, traceability, collaboration, and governance.
+
+**Guiding principle: Architect for the platform we are building toward. Implement only what the next milestone needs.**
+
+## 3.2 Architectural Style
+
+MEIP will initially use a **modular monolith architecture**.
+
+Modules will operate within a shared application deployment while maintaining explicit domain boundaries, interfaces, and ownership responsibilities.
+
+This approach is intended to:
+
+- Reduce unnecessary operational complexity during initial development.
+- Support independent evolution of product capabilities.
+- Preserve clear separation of domain responsibilities.
+- Enable modular product licensing and adoption.
+- Allow selected components to be extracted into independent services if justified by future operational requirements.
+
+Modules must not directly modify another module's privately owned data.
+
+Inter-module communication should occur through defined application interfaces and domain events where appropriate.
+
+A modular monolith does not imply that all modules share unrestricted access to each other's internal implementation.
+
+## 3.3 Multi-Tenant Organizational Model
+
+MEIP will support multiple customer organizations.
+
+Each organization represents a tenant with its own engineering projects, teams, members, policies, configurations, and engineering data.
+
+An organization may contain multiple projects.
+
+A project may involve multiple teams, and a team may contribute to multiple projects.
+
+The organizational model must therefore support flexible many-to-many relationships between teams and projects.
+
+### Foundational entities
+
+- Organization
+- User
+- OrganizationMembership
+- Team
+- TeamMembership
+- Project
+- ProjectMembership
+- TeamProjectAssignment
+- Role
+- Permission
+- RoleAssignment
+
+A single user identity may belong to multiple organizations.
+
+Organization membership does not automatically grant access to every project within that organization.
+
+### Tenant isolation
+
+Every organization-owned resource must have an enforceable tenant scope.
+
+Authorization must validate the active organization context, the user's membership, and the permissions required for the requested operation.
+
+Tenant boundaries apply to application requests, APIs, background processing, search, AI retrieval, integrations, evidence storage, and audit records.
+
+Cross-tenant access is prohibited unless an explicitly designed and authorized sharing capability is introduced.
+
+Tenant isolation must be tested as a foundational security requirement.
+
+## 3.4 Shared Platform Core
+
+The shared platform core provides foundational capabilities required by multiple product modules.
+
+The core must remain focused on reusable platform responsibilities rather than absorbing the business logic of every module.
+
+### 3.4.1 Identity and Access Management
+
+Responsibilities include:
+
+- Authentication integration.
+- User identity and organization membership.
+- Organization-level and project-level authorization.
+- Role and permission assignments.
+- Active organization context.
+- Separation-of-duties enforcement where configured.
+
+Authentication establishes identity. Authorization determines permitted actions within a specific organizational and project context.
+
+### 3.4.2 Organization, Team, and Project Management
+
+Responsibilities include:
+
+- Organization registration and configuration.
+- Project creation and lifecycle management.
+- Team creation and membership.
+- User and team assignments to projects.
+- Project-level policy configuration within organization-level constraints.
+
+This capability owns the organizational structure, not the engineering artifacts produced by individual modules.
+
+### 3.4.3 Engineering Artifact Registry and Lineage
+
+The shared core will maintain common artifact identifiers, ownership references, relationships, and provenance.
+
+The registry will support connections among requirements, acceptance criteria, code changes, builds, test cases, executions, evidence, defects, risks, and release assessments.
+
+The registry does not own every artifact's detailed business data.
+
+For example, the Planning & Requirements module owns requirement content and lifecycle rules, while the shared registry provides a consistent way to identify and relate that requirement to artifacts from other modules.
+
+The lineage model must support artifact versions, relationship history, and relevant engineering context.
+
+A dedicated graph database is not required for the initial implementation.
+
+### 3.4.4 Evidence Management Infrastructure
+
+MEIP will support:
+
+- Externally referenced evidence.
+- Evidence securely stored within MEIP-managed storage.
+- Evidence metadata and provenance.
+- Access controls and retention policies.
+- Evidence relationships to engineering artifacts.
+- Evidence integrity and version context.
+- Decision-time evidence snapshots.
+
+Evidence metadata should identify relevant context such as source, execution time, build, deployment, environment, and configuration baseline when applicable.
+
+Evidence content may include logs, reports, screenshots, recordings, and other engineering files.
+
+MEIP should avoid unnecessary duplication of large external evidence collections.
+
+External evidence references must account for access restrictions, retention, and the possibility that source content may later change or become unavailable.
+
+### 3.4.5 Collaboration and Review Infrastructure
+
+The shared core will provide reusable capabilities for:
+
+- Comments and discussions associated with engineering artifacts.
+- Reviewer assignments.
+- Review requests.
+- Approval and rejection.
+- Requested revisions.
+- Notifications.
+- Review history and provenance.
+
+Reviews and approvals must reference the specific artifact version being evaluated.
+
+Material changes to an approved artifact may require renewed review according to applicable policy.
+
+Individual product modules may define specialized review requirements while using shared review infrastructure.
+
+### 3.4.6 Approval Workflow Engine
+
+The shared core will provide configurable approval workflows.
+
+Supported concepts include:
+
+- Organization-level governance policies.
+- Project-level reviewer assignments and approval requirements.
+- Sequential and parallel review stages.
+- Role-based or named approvers.
+- Separation-of-duties controls.
+- Conditional approvals.
+- Documented rationale and risk acceptance.
+- Approval history and audit records.
+
+Project-level configurations must not silently override mandatory organization-level governance controls.
+
+Finalized approval records must be tamper-evident and protected from unauthorized modification.
+
+### 3.4.7 AI Governance
+
+MEIP will support organization-specific policies controlling the use of AI capabilities.
+
+Policies may govern:
+
+- Which AI capabilities are enabled.
+- Which engineering artifacts AI may access.
+- Team and project permissions.
+- Human review requirements.
+- External AI provider access.
+- Sensitive-data handling.
+- AI usage auditing.
+
+AI-generated engineering artifacts must preserve their generation provenance and review status.
+
+For the initial implementation, AI-generated test scenarios will require human review before approval and publication.
+
+**AI assists engineering work; authorized humans retain accountability for engineering decisions.**
+
+### 3.4.8 Audit and Domain Events
+
+The shared core will provide consistent audit and event infrastructure.
+
+Audit records should capture relevant actor identity, organization, action, affected resource, timestamp, and outcome.
+
+Domain events may communicate meaningful changes between modules without granting unrestricted access to module-owned data.
+
+Event processing must account for retries, idempotency, and failure handling.
+
+### 3.4.9 Integration Framework
+
+The shared integration framework will provide reusable mechanisms for connecting MEIP to external engineering systems.
+
+Responsibilities include:
+
+- Connector registration and configuration.
+- Secure credential references.
+- External artifact identifiers and mapping.
+- Authentication and authorization to external providers.
+- Synchronization status and error handling.
+- Webhook and API integration patterns.
+- Connector activity auditing.
+
+Vendor-specific logic belongs in adapters rather than the shared engineering domain model.
+
+External systems may remain authoritative for the data they own.
+
+## 3.5 Product Module Boundaries
+
+MEIP product modules provide distinct engineering capabilities built upon the shared platform core.
+
+Modules should be independently adoptable wherever practical.
+
+### 3.5.1 Planning & Requirements
+
+Owns:
+
+- Features and requirements.
+- Acceptance criteria.
+- Engineering work items.
+- Estimates and planning baselines.
+- Sprint and milestone planning.
+- Priorities and dependencies.
+- Requirement lifecycle and versioning.
+
+The module must support links to customer requests and business outcomes without becoming a customer relationship management system.
+
+### 3.5.2 Development Intelligence
+
+Owns the interpretation and analysis of development activity, including:
+
+- Code change context.
+- Pull request and review information.
+- Unit-test results.
+- Build associations.
+- Development risks and findings.
+- Relationships between code changes and engineering requirements.
+
+Source repositories and development systems may remain authoritative for code and native development records.
+
+### 3.5.3 Test Design & Validation
+
+Owns:
+
+- Test case definitions and lifecycle.
+- AI-assisted scenario generation.
+- Gherkin scenario creation and review.
+- Test suites and validation planning.
+- Manual validation execution.
+- Validation results and associated findings.
+- Relationships between tests and requirements.
+
+Test Design must be usable without requiring the Release Intelligence module.
+
+### 3.5.4 Automation Intelligence
+
+Owns:
+
+- Automation asset metadata.
+- Automated execution analysis.
+- Automation coverage insights.
+- Failure classification.
+- Flaky-test analysis.
+- Automation health and trends.
+
+Automation frameworks and CI/CD systems may remain the execution systems of record.
+
+Automation Intelligence must not require customers to replace their existing automation frameworks.
+
+### 3.5.5 Change Intelligence
+
+Owns:
+
+- Change-impact analysis.
+- Requirement-change interpretation.
+- Baseline comparisons.
+- Impacted artifact identification.
+- Potentially stale evidence detection.
+- Change-related risk assessments.
+
+Change Intelligence uses shared artifact lineage but owns its analysis rules and results.
+
+### 3.5.6 Release Intelligence
+
+Owns:
+
+- Release candidate assessments.
+- Configurable quality-gate evaluation.
+- Readiness analysis.
+- Release-related risk interpretation.
+- Explainable GO, Conditional GO, and NO GO recommendations.
+- Release-specific decision workflows and records.
+
+Release Intelligence must distinguish between system-generated readiness recommendations and authorized human release decisions.
+
+A final human decision may differ from the system recommendation when organizational policy permits. The difference, rationale, accepted risks, conditions, and approvals must be preserved.
+
+Release Intelligence must be capable of evaluating externally sourced engineering evidence without requiring customers to purchase every other MEIP module.
+
+### 3.5.7 Advanced Traceability & Analytics
+
+Advanced traceability and analytics may be offered as an additional product capability.
+
+Potential features include:
+
+- Cross-project engineering insights.
+- Advanced coverage analysis.
+- Historical engineering trends.
+- Stakeholder reporting.
+- Engineering performance analytics.
+- Evidence completeness analysis.
+
+Foundational artifact identity, relationships, and evidence provenance remain part of the shared platform core and must not depend on purchasing this capability.
+
+## 3.6 Stakeholder Readiness Reviews
+
+MEIP will support engineering teams in presenting evidence and release-readiness assessments to authorized stakeholders.
+
+The intended workflow includes:
+
+1. Gather engineering evidence.
+2. Evaluate quality gates and identified risks.
+3. Prepare a readiness assessment.
+4. Present relevant evidence and demonstrations.
+5. Collect stakeholder comments and approvals.
+6. Record the authorized decision and its rationale.
+
+The platform will support GO, Conditional GO, and NO GO decisions.
+
+A Conditional GO must identify applicable conditions, accepted risks, responsible parties, and any required follow-up.
+
+Decision records must preserve the evaluated release candidate and decision-time evidence context.
+
+## 3.7 Module Interaction Rules
+
+The following rules govern module interaction:
+
+1. Each product module owns its domain-specific business logic.
+2. The shared core owns common platform infrastructure.
+3. Modules interact through documented interfaces and events.
+4. Shared artifact identifiers connect related engineering records.
+5. Authorization is enforced across all module boundaries.
+6. Cross-module workflows must tolerate unavailable or disabled optional modules.
+7. External systems may remain authoritative for their native records.
+8. AI-generated content must preserve provenance and applicable review requirements.
+9. Module licensing must not compromise the integrity of shared engineering records.
+10. Modules must not directly modify another module's privately owned data.
+
+## 3.8 Initial Implementation Strategy
+
+The initial implementation will focus on a small, meaningful engineering workflow.
+
+**Proposed first vertical slice:**
+
+1. Create an organization and project.
+2. Assign a user to the project.
+3. Create a requirement.
+4. Generate Gherkin scenarios using AI assistance.
+5. Submit scenarios for human peer review.
+6. Approve a scenario version.
+7. Record a validation result with relevant engineering context.
+8. Link the requirement, scenario, and validation evidence.
+9. Display basic engineering traceability.
+
+The first slice does not require implementing all product modules, every approval configuration, advanced analytics, or every external connector.
+
+Simulated validation results may be used during development, provided they are explicitly labeled and never represented as real execution evidence.
+
+A subsequent milestone should introduce at least one real external engineering integration.
+
+## 3.9 Architecture Decisions
+
+**Decision 001 — Multi-Organization and Multi-Project Support**
+
+MEIP will support multiple customer organizations, multiple projects per organization, and flexible engineering team assignments.
+
+**Decision 002 — Multi-Organization User Membership**
+
+A single user identity may belong to multiple organizations with isolated authorization contexts.
+
+**Decision 003 — AI Governance and Human Peer Review**
+
+MEIP will support organization-specific AI policies and human review of AI-generated engineering artifacts.
+
+**Decision 004 — Engineering Collaboration**
+
+MEIP will provide shared review, commenting, approval, and collaboration infrastructure.
+
+**Decision 005 — Evidence and Traceability Core**
+
+Foundational evidence references, artifact identity, and engineering lineage will reside in the shared platform core. Advanced analytics may be offered separately.
+
+**Decision 006 — Flexible Evidence Storage**
+
+MEIP will support both externally referenced and securely stored evidence, including stakeholder readiness reviews and decision-time evidence context.
+
+**Decision 007 — Configurable Approval Authority**
+
+Organizations and projects may define authorized reviewers and approval workflows, subject to mandatory organization-level governance policies.
+
+## 3.10 Architectural Principles
+
+The following principles govern future design and implementation:
+
+- Modular Adoption, Unified Intelligence.
+- Vendor-Neutral Engineering Model.
+- Tenant Isolation by Design.
+- Explicit Module Ownership.
+- Human Accountability for Engineering Decisions.
+- AI Assistance with Governance and Provenance.
+- Evidence-Based Engineering Decisions.
+- Configurable Enterprise Governance.
+- Traceability Across the Engineering Lifecycle.
+- Incremental Implementation with Long-Term Architectural Integrity.
+
+## 3.11 Open Design Questions
+
+The following topics require further architectural review before implementation decisions are finalized:
+
+- Database schema and tenant-isolation enforcement.
+- Exact module APIs and domain event contracts.
+- Identity provider selection.
+- Organization and project role inheritance.
+- Evidence storage architecture and retention enforcement.
+- Review workflow state machines.
+- AI provider abstraction and data-handling controls.
+- Connector synchronization and conflict resolution.
+- Module entitlement and licensing enforcement.
+- Cross-project reporting authorization.
+- Release assessment snapshot integrity.
+- Initial deployment, monitoring, and operational security.
